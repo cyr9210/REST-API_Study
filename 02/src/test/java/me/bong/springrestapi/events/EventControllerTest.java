@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,8 +37,7 @@ public class EventControllerTest {
 
     @Test
     public void createEvent() throws Exception {
-        Event event = Event.builder()
-                .id(100)
+        EventDto event = EventDto.builder()
                 .name("spring")
                 .description("rest api")
                 .beginEnrollmentDateTime(LocalDateTime.of(2019, 07, 11, 23, 00))
@@ -48,8 +48,6 @@ public class EventControllerTest {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .location("강남")
-                .free(true)
-                .offline(false)
                 .build();
 //        event.setId(10);
 
@@ -64,8 +62,8 @@ public class EventControllerTest {
                  .andExpect(jsonPath("id").exists())
                  .andExpect(header().exists(HttpHeaders.LOCATION))
                  .andExpect(header().stringValues(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
-                 .andExpect(jsonPath("id").value(Matchers.not(100)))
-                 .andExpect(jsonPath("free").value(Matchers.not(true)))
+                 .andExpect(jsonPath("free").value(false))
+                 .andExpect(jsonPath("offline").value(true))
          ;
     }
 
@@ -130,6 +128,12 @@ public class EventControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .content(objectMapper.writeValueAsString(eventDto)))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$[0].objectName").exists())
+//                .andExpect(jsonPath("$[0].field").exists())
+                .andExpect(jsonPath("$[0].defaultMessage").exists())
+                .andExpect(jsonPath("$[0].code").exists())
+//                .andExpect(jsonPath("$[0].rejectedValue").exists())
         ;
     }
+
 }
