@@ -2,15 +2,13 @@ package me.bong.springrestapi.events;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.bong.springrestapi.common.TestDescription;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,7 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,6 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@AutoConfigureRestDocs
+@Import(RestDocsConfiguration.class)
 public class EventControllerTest {
 
     @Autowired
@@ -57,13 +57,17 @@ public class EventControllerTest {
                         .contentType(MediaType.APPLICATION_JSON_UTF8)
                         .accept(MediaTypes.HAL_JSON)
                         .content(objectMapper.writeValueAsString(event)))
-                 .andDo(print())
-                 .andExpect(status().isCreated())
-                 .andExpect(jsonPath("id").exists())
-                 .andExpect(header().exists(HttpHeaders.LOCATION))
-                 .andExpect(header().stringValues(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
-                 .andExpect(jsonPath("free").value(false))
-                 .andExpect(jsonPath("offline").value(true))
+                    .andDo(print())
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("id").exists())
+                    .andExpect(header().exists(HttpHeaders.LOCATION))
+                    .andExpect(header().stringValues(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_UTF8_VALUE))
+                    .andExpect(jsonPath("free").value(false))
+                    .andExpect(jsonPath("offline").value(true))
+                    .andExpect(jsonPath("_links.self").exists())
+                    .andExpect(jsonPath("_links.update-events").exists())
+                    .andExpect(jsonPath("_links.query-events").exists())
+                    .andDo(document("create-event"))
          ;
     }
 
@@ -134,6 +138,7 @@ public class EventControllerTest {
                 .andExpect(jsonPath("$[0].code").exists())
 //                .andExpect(jsonPath("$[0].rejectedValue").exists())
         ;
+
     }
 
 }
