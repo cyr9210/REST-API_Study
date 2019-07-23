@@ -12,12 +12,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.headers.HeaderDocumentation;
+import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
+import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,7 +73,52 @@ public class EventControllerTest {
                     .andExpect(jsonPath("_links.self").exists())
                     .andExpect(jsonPath("_links.update-events").exists())
                     .andExpect(jsonPath("_links.query-events").exists())
-                    .andDo(document("create-event"))
+                    .andDo(document("create-event",
+                            links(
+                                    linkWithRel("self").description("link to self"),
+                                    linkWithRel("update-events").description("link to update event"),
+                                    linkWithRel("query-events").description("link to query events")
+                            ),
+                            requestHeaders(
+                                    headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header"),
+                                    headerWithName(HttpHeaders.ACCEPT).description("accept header")
+                            ),
+                            requestFields(
+                                    fieldWithPath("name").description("이벤트의 이름"),
+                                    fieldWithPath("description").description("이벤트 설명"),
+                                    fieldWithPath("beginEnrollmentDateTime").description("이벤트 신청 시작 시간"),
+                                    fieldWithPath("closeEnrollmentDateTime").description("이벤트 신청 마감 시간"),
+                                    fieldWithPath("beginEventDateTime").description("이벤트 시작 시간"),
+                                    fieldWithPath("endEventDateTime").description("이벤트 종료 시간"),
+                                    fieldWithPath("basePrice").description("기본 요금"),
+                                    fieldWithPath("maxPrice").description("최대 요금"),
+                                    fieldWithPath("limitOfEnrollment").description("최대 인원"),
+                                    fieldWithPath("location").description("이벤트 개최 장소")
+                            ),
+                            responseHeaders(
+                                    headerWithName(HttpHeaders.LOCATION).description("location header"),
+                                    headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
+                            ),
+                            responseFields(
+                                    fieldWithPath("id").description("이벤트의 id"),
+                                    fieldWithPath("name").description("이벤트의 이름"),
+                                    fieldWithPath("description").description("이벤트 설명"),
+                                    fieldWithPath("beginEnrollmentDateTime").description("이벤트 신청 시작 시간"),
+                                    fieldWithPath("closeEnrollmentDateTime").description("이벤트 신청 마감 시간"),
+                                    fieldWithPath("beginEventDateTime").description("이벤트 시작 시간"),
+                                    fieldWithPath("endEventDateTime").description("이벤트 종료 시간"),
+                                    fieldWithPath("basePrice").description("기본 요금"),
+                                    fieldWithPath("maxPrice").description("최대 요금"),
+                                    fieldWithPath("limitOfEnrollment").description("최대 인원"),
+                                    fieldWithPath("location").description("이벤트 개최 장소"),
+                                    fieldWithPath("free").description("무료 여부"),
+                                    fieldWithPath("offline").description("오프라인 여부"),
+                                    fieldWithPath("eventStatus").description("이벤트 상태"),
+                                    fieldWithPath("_links.self.href").description("link to self"),
+                                    fieldWithPath("_links.update-events.href").description("link to update-events"),
+                                    fieldWithPath("_links.query-events.href").description("link to query-events")
+                            )
+                            ))
          ;
     }
 
