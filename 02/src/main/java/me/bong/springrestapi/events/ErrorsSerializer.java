@@ -3,7 +3,6 @@ package me.bong.springrestapi.events;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.sun.tools.javah.Gen;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.validation.Errors;
 

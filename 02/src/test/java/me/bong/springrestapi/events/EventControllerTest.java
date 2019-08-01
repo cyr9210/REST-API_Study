@@ -77,7 +77,8 @@ public class EventControllerTest {
                             links(
                                     linkWithRel("self").description("link to self"),
                                     linkWithRel("update-events").description("link to update event"),
-                                    linkWithRel("query-events").description("link to query events")
+                                    linkWithRel("query-events").description("link to query events"),
+                                    linkWithRel("profile").description("link to profile")
                             ),
                             requestHeaders(
                                     headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header"),
@@ -116,7 +117,8 @@ public class EventControllerTest {
                                     fieldWithPath("eventStatus").description("이벤트 상태"),
                                     fieldWithPath("_links.self.href").description("link to self"),
                                     fieldWithPath("_links.update-events.href").description("link to update-events"),
-                                    fieldWithPath("_links.query-events.href").description("link to query-events")
+                                    fieldWithPath("_links.query-events.href").description("link to query-events"),
+                                    fieldWithPath("_links.profile.href").description("link to profile")
                             )
                             ))
          ;

@@ -2,6 +2,7 @@ package me.bong.springrestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,7 @@ public class EventController {
         EventResource resource = new EventResource(event);
         resource.add(linkTo(EventController.class).withRel("query-events"));
         resource.add(selfLinkBuilder.withRel("update-events"));
+        resource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
         return ResponseEntity.created(createdUri).body(resource);
     }
 }
