@@ -29,12 +29,13 @@ public class EventController {
     @PostMapping
     public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
 //        Event event = Event.builder().build(); // 이런식으러 넣어줘야한다.
-        if (errors.hasErrors())
-            return ResponseEntity.badRequest().body(errors);
+        if (errors.hasErrors()) {
+            return badRequest(errors);
+        }
 
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors())
-            return ResponseEntity.badRequest().body(errors);
+            return badRequest(errors);
 
         Event event = modelMapper.map(eventDto, Event.class);
         event.update();
@@ -48,5 +49,9 @@ public class EventController {
         resource.add(selfLinkBuilder.withRel("update-events"));
         resource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
         return ResponseEntity.created(createdUri).body(resource);
+    }
+
+    private ResponseEntity badRequest(Errors errors) {
+        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 }
