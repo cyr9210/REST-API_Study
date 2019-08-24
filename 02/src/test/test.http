@@ -1,0 +1,23 @@
+# For a quick start check out our HTTP Requests collection (Tools|HTTP Client|Open HTTP Requests Collection).
+#
+# Following HTTP Request Live Templates are available:
+# * 'gtrp' and 'gtr' create a GET request with or without query parameters;
+# * 'ptr' and 'ptrp' create a POST request with a simple or parameter-like body;
+# * 'mptr' and 'fptr' create a POST request to submit a form with a text or file field (multipart/form-data);
+
+PUT http://localhost:8080/api/events/1
+Content-Type: application/json
+
+{
+  "name" : "수정한 이벤트",
+  "description" : "rest api",
+  "beginEnrollmentDateTime" : "2019-07-11T23:00:00",
+  "closeEnrollmentDateTime" : "2019-07-12T00:00:00",
+  "beginEventDateTime" : "2019-07-13T00:00:00",
+  "endEventDateTime" : "2019-07-14T00:00:00",
+  "location" : "강남",
+  "basePrice" : 100,
+  "maxPrice" : 200,
+  "limitOfEnrollment" : 100
+}
+###

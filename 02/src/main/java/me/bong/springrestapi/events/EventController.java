@@ -20,7 +20,6 @@ import java.net.URI;
 import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Controller
 @RequiredArgsConstructor
@@ -75,6 +74,35 @@ public class EventController {
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity updateEvent(@PathVariable Integer id, @RequestBody @Valid EventDto eventDto, Errors errors) {
+        Optional<Event> byId = this.eventRepository.findById(id);
+
+        if (!byId.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+
+        if (errors.hasErrors()) {
+            return badRequest(errors);
+        }
+
+        this.eventValidator.validate(eventDto, errors);
+        if (errors.hasErrors()) {
+            return badRequest(errors);
+        }
+
+
+        Event event = byId.get();
+        modelMapper.map(eventDto, event);
+        Event updateEvent = eventRepository.save(event);
+//        eventRepository.flush();
+
+        EventResource resource = new EventResource(updateEvent);
+        resource.add(new Link("/docs/index.html#resources-events-update").withRel("profile"));
+
+        return ResponseEntity.ok(resource);
     }
 
     private ResponseEntity badRequest(Errors errors) {

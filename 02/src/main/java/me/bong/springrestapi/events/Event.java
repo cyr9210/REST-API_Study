@@ -1,6 +1,7 @@
 package me.bong.springrestapi.events;
 
 import lombok.*;
+import me.bong.springrestapi.account.Account;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -26,11 +27,38 @@ public class Event {
     private boolean offline;
     private boolean free;
 
+    @ManyToOne
+    private Account manager;
+
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus;
 
     public void update() {
         this.free = (this.basePrice == 0 && this.maxPrice ==0) ? true : false;
         this.offline = (this.location == null || this.location.trim().isEmpty()) ? false : true;
+    }
+
+    public void update(EventDto eventDto) {
+        this.name = eventDto.getName();
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", beginEnrollmentDateTime=" + beginEnrollmentDateTime +
+                ", closeEnrollmentDateTime=" + closeEnrollmentDateTime +
+                ", beginEventDateTime=" + beginEventDateTime +
+                ", endEventDateTime=" + endEventDateTime +
+                ", location='" + location + '\'' +
+                ", basePrice=" + basePrice +
+                ", maxPrice=" + maxPrice +
+                ", limitOfEnrollment=" + limitOfEnrollment +
+                ", offline=" + offline +
+                ", free=" + free +
+                ", eventStatus=" + eventStatus +
+                '}';
     }
 }

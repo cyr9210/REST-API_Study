@@ -1,48 +1,31 @@
 package me.bong.springrestapi.events;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import me.bong.springrestapi.common.BaseControllerTest;
 import me.bong.springrestapi.common.TestDescription;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTest {
+public class EventControllerTest extends BaseControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private EventRepository eventRepository;
@@ -224,15 +207,6 @@ public class EventControllerTest {
         ;
     }
 
-    private Event generateEvent(int i) {
-        Event event = Event.builder()
-                .name("event" + i)
-                .description("test eveent")
-                .build();
-
-        return this.eventRepository.save(event);
-    }
-
     @Test
     @TestDescription("기존의 이벤트 하나 조회하기")
     public void getEvent() throws Exception {
@@ -259,5 +233,98 @@ public class EventControllerTest {
         this.mockMvc.perform(get("/api/events/1142323"))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @TestDescription("이벤트를 정상적으로 수정하기")
+    public void updateEvent() throws Exception {
+        // given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        eventDto.setName("수정한 이벤트");
+
+
+        // when
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .content(this.objectMapper.writeValueAsString(eventDto))
+                        .accept(MediaTypes.HAL_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("name").value(eventDto.getName()))
+                .andExpect(jsonPath("_links.self").exists())
+                .andDo(document("update-event"));
+
+        Event updateEvent = eventRepository.findById(event.getId()).get();
+        assertThat(updateEvent.getName()).isEqualTo(eventDto.getName());
+    }
+
+    @Test
+    @TestDescription("이벤트 입력값이 잘못된 경우 BadRequest 응답 받기")
+    public void updateEvent400_Empty() throws Exception {
+        // given
+        Event event = this.generateEvent(200);
+
+        // when
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaTypes.HAL_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("이벤트 입력값이 잘못된 경우 BadRequest 응답 받기")
+    public void updateEvent400_Wrong() throws Exception {
+        // given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+        eventDto.setBasePrice(20000);
+        eventDto.setMaxPrice(1000);
+
+        // when
+        this.mockMvc.perform(put("/api/events/{id}", event.getId())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(this.objectMapper.writeValueAsString(eventDto))
+                .accept(MediaTypes.HAL_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @TestDescription("존재하지 않는 이벤트 수정 404 응답")
+    public void updateEvent404_NotFound() throws Exception {
+        // given
+        Event event = this.generateEvent(200);
+        EventDto eventDto = this.modelMapper.map(event, EventDto.class);
+
+        // when
+        this.mockMvc.perform(put("/api/events/123331")
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .content(this.objectMapper.writeValueAsString(eventDto))
+                .accept(MediaTypes.HAL_JSON_UTF8))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    private Event generateEvent(int i) {
+        Event event = Event.builder()
+                .name("event" + i)
+                .description("rest api")
+                .beginEnrollmentDateTime(LocalDateTime.of(2019, 07, 11, 23, 00))
+                .closeEnrollmentDateTime(LocalDateTime.of(2019, 07, 12, 00, 00))
+                .beginEventDateTime(LocalDateTime.of(2019, 07, 13, 00, 00))
+                .endEventDateTime(LocalDateTime.of(2019, 07, 14, 00, 00))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("강남")
+                .free(false)
+                .offline(true)
+                .eventStatus(EventStatus.DRAFT)
+                .build();
+
+        return this.eventRepository.save(event);
+    }
+
 
 }
