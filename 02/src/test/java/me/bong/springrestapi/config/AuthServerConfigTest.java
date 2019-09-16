@@ -7,6 +7,7 @@ import me.bong.springrestapi.common.BaseControllerTest;
 import me.bong.springrestapi.common.TestDescription;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 
 import java.util.HashSet;
@@ -53,10 +54,11 @@ public class AuthServerConfigTest extends BaseControllerTest {
                 .param("username", "bong@email.com")
                 .param("password", "bong")
                 .param("grant_type", "password")
+                .accept(MediaType.APPLICATION_JSON_UTF8)
         )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("access_token").exists())
+                .andExpect(jsonPath("access_token").isNotEmpty())
                 ;
     }
 

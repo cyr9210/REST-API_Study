@@ -46,13 +46,13 @@ public class TestRunner implements ApplicationRunner {
         accountRoleSet.add(AccountRole.ADMIN);
         accountRoleSet.add(AccountRole.USER);
 
-        Account account = Account.builder()
-                .email("bong@email.com")
-                .password("bong")
-                .roles(accountRoleSet)
-                .build();
-
-        accountService.saveAccount(account);
+//        Account account = Account.builder()
+//                .email("bong@email.com")
+//                .password("bong")
+//                .roles(accountRoleSet)
+//                .build();
+//
+//        accountService.saveAccount(account);
 
 
     }
