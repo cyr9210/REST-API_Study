@@ -9,15 +9,51 @@ PUT http://localhost:8080/api/events/1
 Content-Type: application/json
 
 {
-  "name" : "수정한 이벤트",
-  "description" : "rest api",
-  "beginEnrollmentDateTime" : "2019-07-11T23:00:00",
-  "closeEnrollmentDateTime" : "2019-07-12T00:00:00",
-  "beginEventDateTime" : "2019-07-13T00:00:00",
-  "endEventDateTime" : "2019-07-14T00:00:00",
-  "location" : "강남",
-  "basePrice" : 100,
-  "maxPrice" : 200,
-  "limitOfEnrollment" : 100
+  "name": "수정한 이벤트",
+  "description": "rest api",
+  "beginEnrollmentDateTime": "2019-07-11T23:00:00",
+  "closeEnrollmentDateTime": "2019-07-12T00:00:00",
+  "beginEventDateTime": "2019-07-13T00:00:00",
+  "endEventDateTime": "2019-07-14T00:00:00",
+  "location": "강남",
+  "basePrice": 100,
+  "maxPrice": 200,
+  "limitOfEnrollment": 100
 }
+
+###
+
+POST http://localhost:8080/oauth/token
+Authorization: Basic bXlBcHA6cGFzcw==
+Content-Type: application/x-www-form-urlencoded
+
+username=user@email.com&password=user&grant_type=password
+
+###
+GET http://localhost:8080/api/events
+Authorization: Bearer 77222873-434a-4f83-82c6-a25767226955
+
+###
+
+POST http://localhost:8080/api/events
+Authorization: Bearer fe8ad6db-2447-4405-a2f2-1f8fabd5d295
+Content-Type: application/json
+
+{
+  "name": "spring",
+  "description": "rest api",
+  "beginEnrollmentDateTime": "2019-07-11T23:00:00",
+  "closeEnrollmentDateTime": "2019-07-12T00:00:00",
+  "beginEventDateTime": "2019-07-13T00:00:00",
+  "endEventDateTime": "2019-07-14T00:00:00",
+  "location": "강남",
+  "basePrice": 100,
+  "maxPrice": 200,
+  "limitOfEnrollment": 100
+}
+
+###
+GET http://localhost:8080/api/events/4
+Authorization: Bearer fe8ad6db-2447-4405-a2f2-1f8fabd5d295
+
 ###
