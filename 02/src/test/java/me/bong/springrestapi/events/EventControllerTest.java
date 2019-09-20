@@ -6,6 +6,7 @@ import me.bong.springrestapi.account.AccountRole;
 import me.bong.springrestapi.account.AccountService;
 import me.bong.springrestapi.common.BaseControllerTest;
 import me.bong.springrestapi.common.TestDescription;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +113,7 @@ public class EventControllerTest extends BaseControllerTest {
                                     headerWithName(HttpHeaders.LOCATION).description("location header"),
                                     headerWithName(HttpHeaders.CONTENT_TYPE).description("content type header")
                             ),
-                            responseFields(
+                            relaxedResponseFields(
                                     fieldWithPath("id").description("이벤트의 id"),
                                     fieldWithPath("name").description("이벤트의 이름"),
                                     fieldWithPath("description").description("이벤트 설명"),
@@ -258,6 +259,31 @@ public class EventControllerTest extends BaseControllerTest {
                 .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
                 .andExpect(jsonPath("_links.self").exists())
                 .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-events"))
+        ;
+    }
+
+    @Test
+    @TestDescription("인증정보를 가지고 30개 이벤트를 10개씩 두번째 페이지 조회하기")
+    public void queryEventsWithAuehntication() throws Exception {
+        //given
+        IntStream.range(0, 30).forEach(this::generateEvent); //mehtod reference로 간결에가 사용이 가능
+
+        //when
+        ResultActions perform = this.mockMvc.perform(get("/api/events")
+                .header(HttpHeaders.AUTHORIZATION, getBaererToken())
+                .param("page", "1")
+                .param("size", "10")
+                .param("sort", "name,DESC"));
+
+        //then
+        perform.andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+                .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andExpect(jsonPath("_links.create-events").exists())
                 .andDo(document("query-events"))
         ;
     }

@@ -1,6 +1,9 @@
 package me.bong.springrestapi.events;
 
 import lombok.RequiredArgsConstructor;
+import me.bong.springrestapi.account.Account;
+import me.bong.springrestapi.account.AccountAdapter;
+import me.bong.springrestapi.account.CurrentUser;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +14,10 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +38,7 @@ public class EventController {
     private final EventValidator eventValidator;
 
     @PostMapping
-    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
-//        Event event = Event.builder().build(); // 이런식으러 넣어줘야한다.
+    public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors, @CurrentUser Account currentUser) {
         if (errors.hasErrors()) {
             return badRequest(errors);
         }
@@ -42,6 +48,7 @@ public class EventController {
             return badRequest(errors);
 
         Event event = modelMapper.map(eventDto, Event.class);
+        event.setManager(currentUser);
         event.update();
         Event newEvent = eventRepository.save(event);
         URI createdUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
@@ -56,10 +63,14 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler) {
+    public ResponseEntity queryEvents(Pageable pageable, PagedResourcesAssembler<Event> assembler, @CurrentUser Account currentUser) {
         Page<Event> page = eventRepository.findAll(pageable);
         PagedResources<Resource<Event>> pagedResources = assembler.toResource(page, e -> new EventResource(e));
         pagedResources.add(new Link("/docs/index.html#resources-events-list").withRel("profile"));
+        if (currentUser != null) {
+            pagedResources.add(linkTo(EventController.class).withRel("create-events"));
+        }
+
         return ResponseEntity.ok(pagedResources);
     }
 
@@ -70,6 +81,7 @@ public class EventController {
             Event event = byId.get();
             EventResource resource = new EventResource(event);
             resource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+
             return ResponseEntity.ok(resource);
         }
 
