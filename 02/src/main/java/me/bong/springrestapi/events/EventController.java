@@ -2,7 +2,6 @@ package me.bong.springrestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import me.bong.springrestapi.account.Account;
-import me.bong.springrestapi.account.AccountAdapter;
 import me.bong.springrestapi.account.CurrentUser;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -13,11 +12,8 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
@@ -75,12 +71,16 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getEvent(@PathVariable Integer id) {
+    public ResponseEntity getEvent(@PathVariable Integer id, @CurrentUser Account currentUser) {
         Optional<Event> byId = eventRepository.findById(id);
         if (byId.isPresent()) {
             Event event = byId.get();
             EventResource resource = new EventResource(event);
             resource.add(new Link("/docs/index.html#resources-events-get").withRel("profile"));
+
+            if (currentUser != null) {
+                resource.add(linkTo(EventController.class).slash(event.getId()).withRel("resources-events-update"));
+            }
 
             return ResponseEntity.ok(resource);
         }
@@ -89,10 +89,10 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updateEvent(@PathVariable Integer id, @RequestBody @Valid EventDto eventDto, Errors errors) {
+    public ResponseEntity updateEvent(@PathVariable Integer id, @RequestBody @Valid EventDto eventDto, Errors errors, @CurrentUser Account currentUser) {
         Optional<Event> byId = this.eventRepository.findById(id);
 
-        if (!byId.isPresent()){
+        if (!byId.isPresent()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -107,6 +107,10 @@ public class EventController {
 
 
         Event event = byId.get();
+        if (!event.getManager().equals(currentUser)) {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
+
         modelMapper.map(eventDto, event);
         Event updateEvent = eventRepository.save(event);
 //        eventRepository.flush();

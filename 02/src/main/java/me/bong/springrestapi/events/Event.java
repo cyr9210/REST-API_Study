@@ -1,7 +1,9 @@
 package me.bong.springrestapi.events;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.*;
 import me.bong.springrestapi.account.Account;
+import me.bong.springrestapi.account.AccountSerializer;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -28,6 +30,7 @@ public class Event {
     private boolean free;
 
     @ManyToOne
+    @JsonSerialize(using = AccountSerializer.class)
     private Account manager;
 
     @Enumerated(EnumType.STRING)

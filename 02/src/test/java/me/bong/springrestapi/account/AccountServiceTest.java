@@ -20,7 +20,6 @@ import java.util.Set;
 import static me.bong.springrestapi.account.AccountRole.ADMIN;
 import static me.bong.springrestapi.account.AccountRole.USER;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 
 @RunWith(SpringRunner.class)
@@ -72,6 +71,6 @@ public class AccountServiceTest {
         expectedException.expect(UsernameNotFoundException.class);
         expectedException.expectMessage(Matchers.containsString(username));
 
-        accountRepository.findByEmail(username);
+        accountService.loadUserByUsername(username);
     }
 }
